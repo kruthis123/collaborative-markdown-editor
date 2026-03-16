@@ -1,0 +1,8 @@
+{
+  "light": {
+    "panel.border": "border-[#d4d4d4]"
+  },
+  "dark": {
+    "panel.border": "border-[#3c3c3c]"
+  }
+}
