@@ -1,4 +1,4 @@
-import Navbar from "../../ui/components/Navbar";
+import Navbar from "../../../ui/components/Navbar";
 
 export default function NonLoginPagesLayout({
   children,

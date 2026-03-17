@@ -8,6 +8,12 @@ import { updateMarkdown } from "@/store/markdown-slice";
 import { useRef } from "react";
 import * as monaco from 'monaco-editor';
 
+function addChangeEventListener(editor: monaco.editor.IStandaloneCodeEditor) {
+  editor.onDidChangeModelContent((event) => {
+    console.log(event);
+  });
+}
+
 export default function EditorPanel() {
   const markdown = useSelector((state: RootState) => state.markdown.content);
   const dispatch = useDispatch();
@@ -24,6 +30,7 @@ export default function EditorPanel() {
           onChange={(value) => dispatch(updateMarkdown(value || ""))}
           onMount={(editor) => {
             editorRef.current = editor;
+            addChangeEventListener(editor);
           }}
           options={{
             minimap: { enabled: false },

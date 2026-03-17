@@ -1,3 +1,5 @@
+'use client';
+
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "@/store/store";
 import { enlargeEditorPanel, shrinkEditorPanel } from "@/store/panel-view-slice";

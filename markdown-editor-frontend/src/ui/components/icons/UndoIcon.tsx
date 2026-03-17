@@ -1,3 +1,5 @@
+'use client';
+
 import * as monaco from 'monaco-editor';
 
 interface UndoIconProps {

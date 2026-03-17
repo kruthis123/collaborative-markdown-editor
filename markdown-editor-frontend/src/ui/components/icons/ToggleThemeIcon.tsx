@@ -1,3 +1,5 @@
+'use client';
+
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '@/store/store';
 import { setTheme } from '@/store/theme-slice';
