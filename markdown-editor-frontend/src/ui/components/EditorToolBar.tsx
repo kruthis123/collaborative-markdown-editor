@@ -5,7 +5,7 @@ import clsx from 'clsx';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store/store';
 import * as monaco from 'monaco-editor';
-import { UndoIcon, RedoIcon, ResetIcon, CopyIcon, DownloadIcon } from './icons';
+import { UndoIcon, RedoIcon, CopyIcon, DownloadIcon } from './icons';
 
 const MIN_GAP_BETWEEN_TITLE_AND_ICONS = 65;
 
@@ -78,7 +78,6 @@ export default function EditorToolBar({ editorRef }: EditorToolBarProps) {
       >
         <UndoIcon editorRef={editorRef} />
         <RedoIcon editorRef={editorRef} />
-        <ResetIcon />
         <CopyIcon />
         <DownloadIcon fileName="Untitled.md" />
       </div>

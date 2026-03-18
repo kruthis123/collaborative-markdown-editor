@@ -8,7 +8,7 @@ import { RootState } from "@/store/store";
 import clsx from "clsx";
 
 export default function PreviewPanel() {
-  const markdown = useSelector((state: RootState) => state.markdown.content);
+  const markdown = useSelector((state: RootState) => state.markdown.markdown);
   const isDarkTheme = useSelector((state: RootState) => state.theme.isDarkTheme);
 
   return (
@@ -21,9 +21,14 @@ export default function PreviewPanel() {
           'bg-white': !isDarkTheme
         }
       )}>
-        <ReactMarkdown
-          remarkPlugins={[remarkGfm]}
-        >{markdown}</ReactMarkdown>
+        <div 
+          className="prose prose-sm max-w-none dark:prose-invert [&_*]:!whitespace-pre-wrap"
+          style={{ whiteSpace: 'pre-wrap', tabSize: 4, MozTabSize: 4 }}
+        >
+          <ReactMarkdown
+            remarkPlugins={[remarkGfm]}
+          >{markdown}</ReactMarkdown>
+        </div>
       </div>
     </div>
   )
