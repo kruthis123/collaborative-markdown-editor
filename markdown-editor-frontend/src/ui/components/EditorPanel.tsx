@@ -2,13 +2,12 @@
 
 import EditorToolBar from "./EditorToolBar";
 import { useDispatch, useSelector } from "react-redux";
-import { RootState } from "@/store/store";
+import { RootState, store } from "@/store/store";
 import Editor from "@monaco-editor/react";
 import { useCallback, useRef, useEffect } from "react";
 import type * as Monaco from 'monaco-editor';
-import { applyDelete, applyInsert, incrementCounter } from "@/store/markdown-slice";
+import { applyDelete, applyInsert, idToString, incrementCounter } from "@/store/markdown-slice";
 import { sendToServer } from "@/app/lib/socket";
-import { store } from "@/store/store";
 
 export default function EditorPanel() {
   const markdown = useSelector((state: RootState) => state.markdown.markdown);
@@ -17,7 +16,6 @@ export default function EditorPanel() {
   const dispatch = useDispatch();
   const isDarkTheme = useSelector((state: RootState) => state.theme.isDarkTheme);
   const editorRef = useRef<Monaco.editor.IStandaloneCodeEditor | null>(null);
-  const monacoRef = useRef<typeof Monaco | null>(null);
 
   const counterRef = useRef(counter);
   const isApplyingRemoteChangeRef = useRef(false);
@@ -29,26 +27,26 @@ export default function EditorPanel() {
 
   // Sync Monaco from Redux ONLY when remoteVersion changes (remote operations)
   useEffect(() => {
-    if (!editorRef.current || !monacoRef.current) return;
+    if (!editorRef.current) return;
     if (remoteVersion === 0) return; // Skip initial state
-    
+
     const editor = editorRef.current;
     const model = editor.getModel();
     if (!model) return;
 
     const currentContent = model.getValue();
     const latestMarkdown = store.getState().markdown.markdown;
-    
+
     // Only update if content actually differs
     if (currentContent !== latestMarkdown) {
       // Save cursor position before sync
       const position = editor.getPosition();
       const selection = editor.getSelection();
-      
+
       isApplyingRemoteChangeRef.current = true;
       model.setValue(latestMarkdown);
       isApplyingRemoteChangeRef.current = false;
-      
+
       // Restore cursor position after sync
       if (position) {
         editor.setPosition(position);
@@ -67,15 +65,21 @@ export default function EditorPanel() {
 
       event.changes.forEach(change => {
         const index = change.rangeOffset;
+        const order = store.getState().markdown.crdt.order;
+        const byId = store.getState().markdown.crdt.byId;
+        const visibleOrder = order
+          .filter(id => !byId[id].deleted);
 
         // DELETE (rangeLength > 0 and text = "") and REPLACE (rangeLength > 0 and text.length > 0)
         if (change.rangeLength > 0) {
-          dispatch(applyDelete({ index, length: change.rangeLength }));
-          sendToServer(JSON.stringify({
-            type: 'delete',
-            index,
-            length: change.rangeLength
-          }));
+          const idsToDelete = visibleOrder.slice(index, index + change.rangeLength);
+          idsToDelete.forEach(id => {
+            dispatch(applyDelete({ id }));
+            sendToServer(JSON.stringify({
+              type: 'delete',
+              id
+            }));
+          });
         }
 
         // INSERT (rangeLength = 0 and text.length > 0) and REPLACE (rangeLength > 0 and text.length > 0)
@@ -84,25 +88,27 @@ export default function EditorPanel() {
           const clientId = store.getState().markdown.crdt.clientId;
           // Start with current Redux counter value for this batch of changes
           let localCounter = counterRef.current;
-          
-          for (let i = 0; i < change.text.length; i++) {
-            const char = change.text[i];
-            const id = `${clientId}-${localCounter}`;
-            
-            dispatch(applyInsert({ index: index + i, char, id }));
+          let currentLeftId = index === 0 ? null : visibleOrder[index - 1];
+
+          for (const char of change.text) {
+            const id = { client: clientId, clock: localCounter };
+            const idString = idToString(id);
+            dispatch(applyInsert({ id, char, left: currentLeftId }));
             dispatch(incrementCounter());
 
             sendToServer(JSON.stringify({
               type: 'insert',
-              index: index + i,
               char,
-              id
+              id,
+              left: currentLeftId
             }));
-            
+
+            // Update left pointer for next character
+            currentLeftId = idString;
             // Increment local counter for next iteration
             localCounter++;
           }
-          
+
           // Update ref with the final counter value
           counterRef.current = localCounter;
         }
@@ -117,9 +123,8 @@ export default function EditorPanel() {
         <Editor
           defaultLanguage="markdown"
           defaultValue={markdown}
-          onMount={(editor, monaco) => {
+          onMount={(editor) => {
             editorRef.current = editor;
-            monacoRef.current = monaco;
             addChangeEventListener();
           }}
           options={{
