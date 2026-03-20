@@ -33,7 +33,7 @@ export default async function EditorPage({ params }: Readonly<EditorPageProps>) 
   return (
     <div>
       <AuthenticatedNavbar userName={user.name} userEmail={user.email} documentId={documentId} />
-      <DocumentLoader content={result.content} userId={user.id.toString()} />
+      <DocumentLoader content={result.content} userId={user.id.toString()} userName={user.name} />
       <MainContainer />
     </div>
   )

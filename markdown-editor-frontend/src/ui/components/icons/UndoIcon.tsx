@@ -1,9 +1,9 @@
 'use client';
 
-import * as monaco from 'monaco-editor';
+import type Editor from '@monaco-editor/react';
 
 interface UndoIconProps {
-  editorRef?: React.MutableRefObject<monaco.editor.IStandaloneCodeEditor | null>;
+  editorRef?: React.MutableRefObject<Parameters<NonNullable<React.ComponentProps<typeof Editor>['onMount']>>[0] | null>;
 }
 
 export default function UndoIcon({ editorRef }: UndoIconProps) {

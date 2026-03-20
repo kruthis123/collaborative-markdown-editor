@@ -4,13 +4,13 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import clsx from 'clsx';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store/store';
-import * as monaco from 'monaco-editor';
+import type Editor from '@monaco-editor/react';
 import { UndoIcon, RedoIcon, CopyIcon, DownloadIcon } from './icons';
 
 const MIN_GAP_BETWEEN_TITLE_AND_ICONS = 65;
 
 interface EditorToolBarProps {
-  editorRef?: React.MutableRefObject<monaco.editor.IStandaloneCodeEditor | null>;
+  editorRef?: React.MutableRefObject<Parameters<NonNullable<React.ComponentProps<typeof Editor>['onMount']>>[0] | null>;
 }
 
 export default function EditorToolBar({ editorRef }: EditorToolBarProps) {

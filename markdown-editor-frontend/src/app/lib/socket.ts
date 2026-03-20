@@ -1,5 +1,6 @@
 import { store } from "@/store/store";
 import { applyInsert, applyDelete, incrementRemoteVersion } from "@/store/markdown-slice";
+import { updatePresence } from "@/store/presence-slice";
 
 const wsUrl = process.env.NEXT_PUBLIC_WEBSOCKET_SERVER_URL || 'ws://192.168.68.50:8000';
 
@@ -40,5 +41,12 @@ getSocket().onmessage = async (event: MessageEvent) => {
   } else if (op.type === 'delete') {
     store.dispatch(applyDelete({ id: op.id }));
     store.dispatch(incrementRemoteVersion());
+  } else if (op.type === 'selection') {
+    store.dispatch(updatePresence({
+      userId: op.userId,
+      selection: op.selection,
+      color: op.color,
+      userName: op.userName
+    }));
   }
 };

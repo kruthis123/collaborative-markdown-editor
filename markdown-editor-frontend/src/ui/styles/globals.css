@@ -32,3 +32,23 @@ html, body {
 .decorationsOverviewRuler {
   display: none !important;
 }
+
+/* Cursor styles - now using inline styles for dynamic colors */
+.remote-cursor-line {
+  position: relative;
+}
+
+.remote-cursor-before::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background-color: var(--user-color, #ff0000);
+}
+
+/* Selection styles - now using inline styles for dynamic colors */
+.remote-selection {
+  background-color: var(--user-color-alpha, rgba(255, 0, 0, 0.2)) !important;
+}

@@ -3,27 +3,32 @@
 import EditorToolBar from "./EditorToolBar";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState, store } from "@/store/store";
-import Editor from "@monaco-editor/react";
+import Editor, { type Monaco } from "@monaco-editor/react";
 import { useCallback, useRef, useEffect } from "react";
-import type * as Monaco from 'monaco-editor';
 import { applyDelete, applyInsert, idToString, incrementCounter } from "@/store/markdown-slice";
 import { sendToServer } from "@/app/lib/socket";
 
 export default function EditorPanel() {
   const markdown = useSelector((state: RootState) => state.markdown.markdown);
   const counter = useSelector((state: RootState) => state.markdown.crdt.counter);
+  const currentUser = useSelector((state: RootState) => state.user);
+  const onlineUsers = useSelector((state: RootState) => state.presence);
   const remoteVersion = useSelector((state: RootState) => state.markdown.ui.remoteVersion);
   const dispatch = useDispatch();
   const isDarkTheme = useSelector((state: RootState) => state.theme.isDarkTheme);
-  const editorRef = useRef<Monaco.editor.IStandaloneCodeEditor | null>(null);
+  const editorRef = useRef<Parameters<NonNullable<React.ComponentProps<typeof Editor>['onMount']>>[0] | null>(null);
+  const monacoRef = useRef<Monaco | null>(null);
 
   const counterRef = useRef(counter);
+  const currentUserRef = useRef(currentUser);
   const isApplyingRemoteChangeRef = useRef(false);
+  const decorationIdsRef = useRef<string[]>([]);
   
   // Sync ref with Redux state on every render
   useEffect(() => {
     counterRef.current = counter;
-  }, [counter]);
+    currentUserRef.current = currentUser;
+  }, [counter, currentUser]);
 
   // Sync Monaco from Redux ONLY when remoteVersion changes (remote operations)
   useEffect(() => {
@@ -56,6 +61,90 @@ export default function EditorPanel() {
       }
     }
   }, [remoteVersion]);
+
+  useEffect(() => {
+    const model = editorRef.current?.getModel();
+    if (!model || !monacoRef.current) return;
+
+    // Helper to convert hex color to rgba
+    const hexToRgba = (hex: string, alpha: number) => {
+      const r = Number.parseInt(hex.slice(1, 3), 16);
+      const g = Number.parseInt(hex.slice(3, 5), 16);
+      const b = Number.parseInt(hex.slice(5, 7), 16);
+      return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    };
+
+    const decorations = Object.entries(onlineUsers)
+      .filter(([userId]) => userId !== currentUser.userId) // Exclude current user
+      .flatMap(([userId, user]) => {
+      const startPos = model.getPositionAt(user.selection.start);
+      const endPos = model.getPositionAt(user.selection.end);
+      const isCursorOnly = user.selection.start === user.selection.end;
+      
+      // Create CSS-safe userId
+      const safeUserId = userId.replace(/[^a-zA-Z0-9-_]/g, '_');
+      
+      const result = [];
+      
+      if (isCursorOnly) {
+        // For cursor only, show a vertical line at the position
+        // Use a minimal range at the exact position
+        result.push({
+          range: new monacoRef.current!.Range(
+            startPos.lineNumber, 
+            startPos.column, 
+            startPos.lineNumber, 
+            startPos.column + 1
+          ),
+          options: {
+            className: `remote-cursor-${safeUserId}`,
+            hoverMessage: [{ value: `${user.userName}` }],
+            stickiness: monacoRef.current!.editor.TrackedRangeStickiness.NeverGrowsWhenTypingAtEdges
+          }
+        });
+      } else {
+        // For selection, show highlighted range
+        result.push({
+          range: new monacoRef.current!.Range(startPos.lineNumber, startPos.column, endPos.lineNumber, endPos.column),
+          options: {
+            className: `remote-selection-${safeUserId}`,
+            hoverMessage: [{ value: `${user.userName}` }]
+          }
+        });
+      }
+      
+      return result;
+    });
+    
+    // Create dynamic style element for user colors
+    let styleEl = document.getElementById('remote-user-styles');
+    if (!styleEl) {
+      styleEl = document.createElement('style');
+      styleEl.id = 'remote-user-styles';
+      document.head.appendChild(styleEl);
+    }
+    
+    const styles = Object.entries(onlineUsers).map(([userId, user]) => {
+      const safeUserId = userId.replace(/[^a-zA-Z0-9-_]/g, '_');
+      return `
+        .remote-selection-${safeUserId} {
+          background-color: ${hexToRgba(user.color, 0.2)} !important;
+        }
+        .remote-cursor-${safeUserId} {
+          background-color: transparent !important;
+          border-left: 2px solid ${user.color} !important;
+        }
+      `;
+    }).join('\n');
+    
+    styleEl.textContent = styles;
+    
+    // Update decorations, replacing old ones
+    const newDecorationIds = editorRef.current?.deltaDecorations(decorationIdsRef.current, decorations);
+    if (newDecorationIds) {
+      decorationIdsRef.current = newDecorationIds;
+    }
+  }, [onlineUsers, currentUser.userId])
 
   const addChangeEventListener = useCallback(() => {
     editorRef.current?.onDidChangeModelContent((event) => {
@@ -116,6 +205,24 @@ export default function EditorPanel() {
     });
   }, [dispatch]);
 
+  const addCursorAndSelectionChangeEventListener = () => {
+    if (editorRef.current) {
+      editorRef.current.onDidChangeCursorSelection((e) => {
+        const model = editorRef.current?.getModel();
+
+        const start = model?.getOffsetAt(e.selection.getStartPosition());
+        const end = model?.getOffsetAt(e.selection.getEndPosition());
+        sendToServer(JSON.stringify({
+          type: 'selection',
+          userId: currentUserRef.current.userId,
+          selection: { start, end },
+          color: currentUserRef.current.color,
+          userName: currentUserRef.current.userName
+        }));
+      })
+    }
+  };
+
   return (
     <div className="grow-1 h-[100%]">
       <EditorToolBar editorRef={editorRef} />
@@ -123,9 +230,11 @@ export default function EditorPanel() {
         <Editor
           defaultLanguage="markdown"
           defaultValue={markdown}
-          onMount={(editor) => {
+          onMount={(editor, monaco) => {
             editorRef.current = editor;
+            monacoRef.current = monaco;
             addChangeEventListener();
+            addCursorAndSelectionChangeEventListener();
           }}
           options={{
             minimap: { enabled: false },
