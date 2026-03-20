@@ -16,9 +16,13 @@ interface CRDTState {
 interface MarkdownState {
   markdown: string,
   crdt: CRDTState
+  ui: {
+    isApplyingRemoteChange: boolean
+    remoteVersion: number  // Increments only for remote operations
+  }
 }
 
-function initializeCRDT(text: string, clientId: string): MarkdownState {
+function initializeCRDT(text: string): MarkdownState {
   const byId: {
     [id: string]: {
       id: string
@@ -50,14 +54,18 @@ function initializeCRDT(text: string, clientId: string): MarkdownState {
     crdt: {
       byId,
       order,
-      clientId,
+      clientId: "1",
       counter
     },
-    markdown
+    markdown,
+    ui: {
+      isApplyingRemoteChange: false,
+      remoteVersion: 0
+    }
   }
 }
 
-const initialState = initializeCRDT("# Hello! Collaborative Markdown Editor", "A");
+const initialState = initializeCRDT("# Hello! Collaborative Markdown Editor");
 
 const markdownSlice = createSlice({
   name: "crdt",
@@ -110,9 +118,25 @@ const markdownSlice = createSlice({
     },
     incrementCounter: (state: MarkdownState) => {
       state.crdt.counter++;
+    },
+    setIsApplyingRemoteChange: (state: MarkdownState, action: PayloadAction<boolean>) => {
+      state.ui.isApplyingRemoteChange = action.payload;
+    },
+    incrementRemoteVersion: (state: MarkdownState) => {
+      state.ui.remoteVersion++;
+    },
+    setClientId: (state: MarkdownState, action: PayloadAction<string>) => {
+      state.crdt.clientId = action.payload;
+    },
+    loadDocument: (state: MarkdownState, action: PayloadAction<{ content: string }>) => {
+      const { content } = action.payload;
+      const newState = initializeCRDT(content);
+      state.crdt = newState.crdt;
+      state.markdown = newState.markdown;
+      state.ui = newState.ui;
     }
   }
 });
 
-export const { applyInsert, applyDelete, incrementCounter } = markdownSlice.actions;
+export const { applyInsert, applyDelete, incrementCounter, setIsApplyingRemoteChange, incrementRemoteVersion, setClientId, loadDocument } = markdownSlice.actions;
 export default markdownSlice.reducer;

@@ -12,5 +12,31 @@ model UserProfile {
   password_hash String
   name          String?
   
+  ownedDocuments    Document[]        @relation("DocumentOwner")
+  sharedAccess      DocumentAccess[]
+  
   @@map("userprofile")
+}
+
+model Document {
+  id           Int       @id @default(autoincrement())
+  title        String
+  storage_path String    @map("storage_path")
+  owner_id     Int
+  
+  owner        UserProfile        @relation("DocumentOwner", fields: [owner_id], references: [id], onDelete: Cascade)
+  access       DocumentAccess[]
+  
+  @@map("document")
+}
+
+model DocumentAccess {
+  document_id  Int
+  user_id      Int
+  
+  document     Document     @relation(fields: [document_id], references: [id], onDelete: Cascade)
+  user         UserProfile  @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  
+  @@id([document_id, user_id])
+  @@map("document_access")
 }

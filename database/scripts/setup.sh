@@ -11,8 +11,9 @@ if ! docker ps | grep -q postgres; then
     exit 1
 fi
 
-# Run the setup script
+# Run the setup scripts
 psql -h $DB_HOST -p $DB_PORT -U $DB_USER -d $DB_NAME -f setup-users-table.sql
+psql -h $DB_HOST -p $DB_PORT -U $DB_USER -d $DB_NAME -f setup-documents-table.sql
 
 if [ $? -eq 0 ]; then
     echo "✅ Database setup completed successfully!"
