@@ -6,14 +6,17 @@ import { useSelector } from 'react-redux';
 import { RootState } from '@/store/store';
 import type Editor from '@monaco-editor/react';
 import { UndoIcon, RedoIcon, CopyIcon, DownloadIcon } from './icons';
+import SaveButton from './SaveButton';
 
 const MIN_GAP_BETWEEN_TITLE_AND_ICONS = 65;
 
 interface EditorToolBarProps {
   editorRef?: React.MutableRefObject<Parameters<NonNullable<React.ComponentProps<typeof Editor>['onMount']>>[0] | null>;
+  documentId?: number;
+  documentTitle?: string;
 }
 
-export default function EditorToolBar({ editorRef }: EditorToolBarProps) {
+export default function EditorToolBar({ editorRef, documentId, documentTitle }: EditorToolBarProps) {
   const [areIconsVisible, setAreIconsVisible] = useState(true);
   const isDarkTheme = useSelector((state: RootState) => state.theme.isDarkTheme);
   const toolbarRef = useRef<HTMLDivElement>(null);
@@ -68,8 +71,8 @@ export default function EditorToolBar({ editorRef }: EditorToolBarProps) {
         'border-[#d4d4d4]': !isDarkTheme
       }
     )} ref={toolbarRef}>
-      <div className="flex-1 text-sm truncate max-w-[calc(100%-230px)] overflow-hidden whitespace-nowrap" ref={titleTextRef} title="Untitled.mdasdfafrafvrvrftgbg">
-        Untitled.md
+      <div className="flex-1 text-sm truncate max-w-[calc(100%-230px)] overflow-hidden whitespace-nowrap" ref={titleTextRef} title={documentTitle || 'Untitled.md'}>
+        {documentTitle || 'Untitled.md'}
       </div>
 
       <div 
@@ -79,7 +82,8 @@ export default function EditorToolBar({ editorRef }: EditorToolBarProps) {
         <UndoIcon editorRef={editorRef} />
         <RedoIcon editorRef={editorRef} />
         <CopyIcon />
-        <DownloadIcon fileName="Untitled.md" />
+        <DownloadIcon fileName={documentTitle || 'Untitled.md'} />
+        {documentId && <SaveButton documentId={documentId} />}
       </div>
     </div>
   );

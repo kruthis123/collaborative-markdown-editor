@@ -1,6 +1,6 @@
 import 'server-only'
 import { SignJWT, jwtVerify } from 'jose'
-import { SessionPayload } from '@/app/lib/definitions'
+import { SessionPayload } from '@/lib/definitions'
 import { cookies } from 'next/headers'
 import { prisma } from '@/lib/prisma'
  

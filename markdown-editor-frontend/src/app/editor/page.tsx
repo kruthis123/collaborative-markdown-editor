@@ -1,6 +1,6 @@
 import AuthenticatedNavbar from '@/ui/components/AuthenticatedNavbar'
 import MainContainer from '@/ui/components/MainContainer'
-import { getCurrentUser } from '@/app/lib/session'
+import { getCurrentUser } from '@/lib/session'
 import { redirect } from 'next/navigation'
 
 export default async function EditorPage() {

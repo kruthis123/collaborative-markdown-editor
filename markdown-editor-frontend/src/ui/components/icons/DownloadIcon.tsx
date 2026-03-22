@@ -8,7 +8,7 @@ interface DownloadIconProps {
 }
 
 export default function DownloadIcon({ fileName = 'Untitled.md' }: DownloadIconProps) {
-  const markdown = useSelector((state: RootState) => state.markdown.content);
+  const markdown = useSelector((state: RootState) => state.markdown.markdown);
 
   const handleDownload = () => {
     // Create a blob with the markdown content

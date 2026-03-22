@@ -1,7 +1,7 @@
 'use server'
 
 import { prisma } from '@/lib/prisma'
-import { getCurrentUser } from '@/app/lib/session'
+import { getCurrentUser } from '@/lib/session'
 
 export async function getOwnedDocuments() {
   const user = await getCurrentUser()
@@ -103,7 +103,7 @@ export async function getDocumentContent(documentId: number) {
       return { error: 'Document not found or access denied' }
     }
 
-    const backendUrl = process.env.BACKEND_URL || 'http://192.168.68.50:8001'
+    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://192.168.68.50:8001'
     const response = await fetch(`${backendUrl}/file/${document.storage_path}`)
     
     if (!response.ok) {
@@ -149,7 +149,7 @@ export async function saveDocumentContent(documentId: number, content: string) {
       return { error: 'Document not found or you do not have permission to edit' }
     }
 
-    const backendUrl = process.env.BACKEND_URL || 'http://192.168.68.50:8001'
+    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://192.168.68.50:8001'
     const response = await fetch(`${backendUrl}/file/${document.storage_path}`, {
       method: 'POST',
       headers: {

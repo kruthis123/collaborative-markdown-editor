@@ -11,6 +11,7 @@ export interface ProfileIconProps {
 export default function ProfileIcon({ userName, userEmail }: Readonly<ProfileIconProps>) {
   const [showDropdown, setShowDropdown] = useState(false);
   const isDarkTheme = useSelector((state: RootState) => state.theme.isDarkTheme);
+  const currentUser = useSelector((state: RootState) => state.user);
   const dropdownRef = useRef<HTMLDivElement>(null);
   
     // Close dropdown when clicking outside
@@ -31,18 +32,15 @@ export default function ProfileIcon({ userName, userEmail }: Readonly<ProfileIco
       <div className="relative" ref={dropdownRef}>
         <button
           onClick={() => setShowDropdown(!showDropdown)}
-          className={clsx(
-            'p-2 rounded-lg transition-colors',
-            {
-              'hover:bg-gray-700': isDarkTheme,
-              'hover:bg-gray-100': !isDarkTheme
-            }
-          )}
+          className="transition-opacity hover:opacity-80"
           title="Profile"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="size-6">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-          </svg>
+          <div
+            className="w-8 h-8 rounded-full border-2 border-white flex items-center justify-center text-white font-semibold text-sm cursor-pointer"
+            style={{ backgroundColor: currentUser.color }}
+          >
+            {userName?.charAt(0).toUpperCase() || 'U'}
+          </div>
         </button>
 
         {showDropdown && (

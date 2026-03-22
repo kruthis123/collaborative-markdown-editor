@@ -6,7 +6,7 @@ import { RootState } from '@/store/store';
 
 export default function CopyIcon() {
   const [copied, setCopied] = useState(false);
-  const markdown = useSelector((state: RootState) => state.markdown.content);
+  const markdown = useSelector((state: RootState) => state.markdown.markdown);
 
   const handleCopy = async () => {
     try {

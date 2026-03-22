@@ -7,14 +7,10 @@ import clsx from 'clsx';
 import { EnlargeEditorIcon } from './icons';
 import EnlargePreviewIcon from './icons/EnlargePreviewIcon';
 import ProfileIcon, { ProfileIconProps } from './icons/ProfileIcon';
-import SaveButton from './SaveButton';
+import OnlineUsers from './OnlineUsers';
 import { usePathname } from 'next/navigation';
 
-interface AuthenticatedNavbarProps extends ProfileIconProps {
-  documentId?: number;
-}
-
-export default function AuthenticatedNavbar({ userName, userEmail, documentId }: Readonly<AuthenticatedNavbarProps>) {
+export default function AuthenticatedNavbar({ userName, userEmail }: Readonly<ProfileIconProps>) {
   const isDarkTheme = useSelector((state: RootState) => state.theme.isDarkTheme);
   const pathname = usePathname();
   const isEditorRoute = pathname === '/editor' || pathname?.startsWith('/editor/');
@@ -39,11 +35,9 @@ export default function AuthenticatedNavbar({ userName, userEmail, documentId }:
         )}
       </div>
 
-      {/* Right side - Save Button and Profile */}
+      {/* Right side - Online Users and Profile */}
       <div className="flex items-center gap-4 pr-2">
-        {isEditorRoute && documentId && (
-          <SaveButton documentId={documentId} />
-        )}
+        {isEditorRoute && <OnlineUsers />}
         <ProfileIcon userName={userName} userEmail={userEmail} />
       </div>
     </div>

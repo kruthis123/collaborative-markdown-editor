@@ -1,8 +1,8 @@
 'use server';
 
-import { SignupFormSchema, LoginFormSchema, FormState } from '@/app/lib/definitions'
+import { SignupFormSchema, LoginFormSchema, FormState } from '@/lib/definitions'
 import bcrypt from 'bcryptjs';
-import { createSession } from '@/app/lib/session';
+import { createSession } from '@/lib/session';
 import { prisma } from '@/lib/prisma';
 import { redirect } from 'next/navigation';
  

@@ -8,7 +8,12 @@ import { RootState } from "@/store/store";
 import { useEffect, useRef } from "react";
 import clsx from "clsx";
 
-export default function MainContainer() {
+interface MainContainerProps {
+  documentId?: number;
+  documentTitle?: string;
+}
+
+export default function MainContainer({ documentId, documentTitle }: MainContainerProps) {
   const isEditorPanelEnlarged = useSelector((state: RootState) => state.panelView.editorPanelEnlarged);
   const isPreviewPanelEnlarged = useSelector((state: RootState) => state.panelView.previewPanelEnlarged);
   const isDarkTheme = useSelector((state: RootState) => state.theme.isDarkTheme);
@@ -63,7 +68,7 @@ export default function MainContainer() {
             }
           )}
         >
-          <EditorPanel />
+          <EditorPanel documentId={documentId} documentTitle={documentTitle} />
         </Panel>
         <PanelResizeHandle 
           className={clsx(

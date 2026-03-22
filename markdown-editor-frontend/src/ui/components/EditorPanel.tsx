@@ -6,9 +6,14 @@ import { RootState, store } from "@/store/store";
 import Editor, { type Monaco } from "@monaco-editor/react";
 import { useCallback, useRef, useEffect } from "react";
 import { applyDelete, applyInsert, idToString, incrementCounter } from "@/store/markdown-slice";
-import { sendToServer } from "@/app/lib/socket";
+import { sendToServer } from "@/lib/socket";
 
-export default function EditorPanel() {
+interface EditorPanelProps {
+  documentId?: number;
+  documentTitle?: string;
+}
+
+export default function EditorPanel({ documentId, documentTitle }: EditorPanelProps) {
   const markdown = useSelector((state: RootState) => state.markdown.markdown);
   const counter = useSelector((state: RootState) => state.markdown.crdt.counter);
   const currentUser = useSelector((state: RootState) => state.user);
@@ -225,7 +230,7 @@ export default function EditorPanel() {
 
   return (
     <div className="grow-1 h-[100%]">
-      <EditorToolBar editorRef={editorRef} />
+      <EditorToolBar editorRef={editorRef} documentId={documentId} documentTitle={documentTitle} />
       <div className="pr-4 h-[calc(100%-40px)]">
         <Editor
           defaultLanguage="markdown"

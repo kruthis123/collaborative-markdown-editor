@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store/store';
-import { saveDocumentContent } from '@/app/actions/documents';
+import { saveDocumentContent } from '../../actions/documents';
 import clsx from 'clsx';
 
 interface SaveButtonProps {
@@ -53,14 +53,10 @@ export default function SaveButton({ documentId }: Readonly<SaveButtonProps>) {
       disabled={isSaving}
       title={getTitle()}
       className={clsx(
-        'p-1.5 rounded border-1 transition-all',
+        'p-1.5 rounded transition-all',
         {
-          'bg-[#3c3c3c] border-[#3c3c3c] hover:border-gray-400': isDarkTheme && saveStatus === 'idle',
-          'bg-white border-gray-300 hover:border-gray-400': !isDarkTheme && saveStatus === 'idle',
-          'bg-[#3c3c3c] border-green-500': isDarkTheme && saveStatus === 'success',
-          'bg-white border-green-500': !isDarkTheme && saveStatus === 'success',
-          'bg-[#3c3c3c] border-red-500': isDarkTheme && saveStatus === 'error',
-          'bg-white border-red-500': !isDarkTheme && saveStatus === 'error',
+          'hover:bg-gray-100': !isDarkTheme && saveStatus === 'idle',
+          'hover:bg-[#3c3c3c]': isDarkTheme && saveStatus === 'idle',
           'opacity-50 cursor-not-allowed': isSaving
         }
       )}
