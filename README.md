@@ -2,6 +2,10 @@
 
 A real-time collaborative Markdown editor built from scratch using a custom **Conflict-free Replicated Data Type (CRDT)** implementation. This project demonstrates how distributed systems can achieve **eventual consistency** without centralized conflict resolution.
 
+## 🎥 Demo
+
+[Watch the collaborative Markdown editor demo](demo/collaborative-markdown-editor-demo.mov)
+
 ---
 
 ## 🚀 Features
