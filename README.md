@@ -4,7 +4,10 @@ A real-time collaborative Markdown editor built from scratch using a custom **Co
 
 ## 🎥 Demo
 
-[Watch the collaborative Markdown editor demo](demo/collaborative-markdown-editor-demo.mov)
+<video controls width="800">
+  <source src="./demo/collaborative-markdown-editor-demo.mp4" type="video/mp4">
+  Your browser does not support embedded video. [Open the demo recording](demo/collaborative-markdown-editor-demo.mp4).
+</video>
 
 ---
 
